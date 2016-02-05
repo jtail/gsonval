@@ -15,7 +15,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.HttpUrlConnectorProvider;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Value;
@@ -58,7 +57,6 @@ public class JerseyTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
-    @Ignore
     @Test
     public void nestedObjects() {
         String json = "{'unverified':{}, 'valid':{}}";
@@ -66,7 +64,7 @@ public class JerseyTest {
         assertEquals(HttpStatus.BAD_REQUEST, HttpStatus.valueOf(response.getStatus()));
         String entity = response.readEntity(String.class);
         JsonObject r = new JsonParser().parse(entity).getAsJsonObject();
-        Assert.assertEquals(Bar.NO_BEER_NO_BAR, r.getAsJsonObject("valid").getAsJsonPrimitive("beer").getAsString());
+        Assert.assertEquals(Bar.NO_BEER_NO_BAR, r.getAsJsonObject("valid").getAsJsonArray("beer").get(0).getAsString());
         Assert.assertNull(r.get("unverified"));
     }
 
