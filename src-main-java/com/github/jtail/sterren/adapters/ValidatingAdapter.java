@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.TypeAdapter;
+import com.google.gson.internal.bind.TypeAdapters;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
@@ -83,18 +84,24 @@ public class ValidatingAdapter<T> extends TypeAdapter<T> {
     private T delegate(ErrorTrackingReader in) throws IOException {
         try {
             return delegate.read(in);
+        } catch (NumberFormatException e) {
+            return processError(in, e.getMessage());
         } catch (JsonSyntaxException e) {
-            String value = in.nextString();
-            String text = "Unable to parse: `" + value + "` using " + delegate.getClass().getName() + ": " + getErrorMessage(e);
-            in.getErrors().push(Pair.of(in.getPath(), new JsonPrimitive(text)));
-            // Continue parsing without setting this field
-            return null;
+            Throwable t = e.getCause();
+            return processError(in, (t instanceof NumberFormatException) ? t.getMessage() : e.getMessage());
         }
     }
 
-    private String getErrorMessage(JsonSyntaxException e) {
-        Throwable t = e.getCause();
-        return (t instanceof NumberFormatException) ? t.getMessage() : e.getMessage();
+    private T processError(ErrorTrackingReader reader, String message) throws IOException {
+        String value = reader.nextString();
+
+        String adapterClass = delegate.getClass().getName();
+        // TypeAdapters class name carries no meaningful information, so we skip it
+        String text = adapterClass.startsWith(TypeAdapters.class.getName()) ? message
+                : "Unable to parse: `" + value + "` using " + adapterClass + ": " + message;
+        reader.pushError(reader.getPath(), new JsonPrimitive(text));
+        // Continue parsing without setting this field
+        return null;
     }
 
     /**
