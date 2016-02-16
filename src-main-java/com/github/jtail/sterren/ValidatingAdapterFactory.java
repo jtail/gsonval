@@ -48,7 +48,7 @@ public class ValidatingAdapterFactory implements TypeAdapterFactory {
     @Override
     public <T> TypeAdapter<T> create(Gson gson, final TypeToken<T> type) {
         Consumer<T> validate = validator != null ? this::validate : t -> {};
-        return new ValidatingAdapter<>(gson.getDelegateAdapter(this, type), validate);
+        return new ValidatingAdapter<>(gson.getDelegateAdapter(this, type), validate, type);
     }
 
     private <T> T validate(T object) {

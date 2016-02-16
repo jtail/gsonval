@@ -1,21 +1,17 @@
 package com.github.jtail.sterren;
 
-import com.github.jtail.testbeans.P;
 import com.github.jtail.testbeans.D;
-import com.google.gson.JsonElement;
+import com.github.jtail.testbeans.P;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Assert;
 import org.junit.Test;
 
 import static com.github.jtail.gson.BJson.arr;
 import static com.github.jtail.gson.BJson.obj;
 import static com.github.jtail.gson.Prop.val;
-import static com.github.jtail.testutil.JsonMatchers.hasJsonPath;
-import static org.hamcrest.Matchers.anything;
 
 /**
  * Test for some a few specific features, like arrays and generics that are known to be tricky.
@@ -42,23 +38,23 @@ public class SmokeTest extends AbstractGsonValTest {
 
     @Test
     public void test2() throws Exception {
-        String json = obj(val("value", "X")).toString();
-        String s = assertFails(json, Int.class).toString();
-        Assert.assertThat(s, hasJsonPath("value", anything()));
+        given("{'value':'X'}").parseTo(Int.class).failWith("{'value':'Unable to parse `X` as [int]'}");
     }
 
     @Test
+    @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
     public void testArray() throws Exception {
-
-        TypeToken<Int[]> type = new TypeToken<Int[]>() {};
-        String json = arr(
-                obj(val("value", "1")),
-                obj(val("va.lue", ".X")),
-                obj(val("value", "Y"))
-        ).toString();
-        JsonElement errors = assertFails(json, type.getRawType());
-        Assert.assertNotNull(errors.getAsJsonObject().getAsJsonObject("2").get("va.lue"));
-        Assert.assertNotNull(errors.getAsJsonObject().getAsJsonObject("3").get("value"));
+        given(
+                arr(
+                        obj(val("value", "1")),
+                        obj(val("va.lue", ".X")),
+                        obj(val("value", "Y"))
+                ).toString()
+        ).parseTo(
+                new TypeToken<Int[]>() {}
+        ).failWith(
+                "{'2':{'va.lue':'Unable to parse `.X` as [int]'}, '3':{'value':'Unable to parse `Y` as [int]'}}"
+        );
     }
 
     @AllArgsConstructor

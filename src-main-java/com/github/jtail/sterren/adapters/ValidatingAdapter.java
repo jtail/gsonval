@@ -1,18 +1,20 @@
 package com.github.jtail.sterren.adapters;
 
 import com.github.jtail.sterren.ObjectValidationException;
+import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.TypeAdapter;
-import com.google.gson.internal.bind.TypeAdapters;
+import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.Deque;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -21,10 +23,12 @@ import java.util.function.Function;
 public class ValidatingAdapter<T> extends TypeAdapter<T> {
     private final TypeAdapter<T> delegate;
     private final Consumer<T> validationCallback;
+    private TypeToken<T> type;
 
-    public ValidatingAdapter(TypeAdapter<T> delegate, Consumer<T> validationCallback) {
+    public ValidatingAdapter(TypeAdapter<T> delegate, Consumer<T> validationCallback, TypeToken<T> type) {
         this.delegate = delegate;
         this.validationCallback = validationCallback;
+        this.type = type;
     }
 
     @Override
@@ -95,13 +99,19 @@ public class ValidatingAdapter<T> extends TypeAdapter<T> {
     private T processError(ErrorTrackingReader reader, String message) throws IOException {
         String value = reader.nextString();
 
-        String adapterClass = delegate.getClass().getName();
-        // TypeAdapters class name carries no meaningful information, so we skip it
-        String text = adapterClass.startsWith(TypeAdapters.class.getName()) ? message
-                : "Unable to parse: `" + value + "` using " + adapterClass + ": " + message;
-        reader.pushError(reader.getPath(), new JsonPrimitive(text));
+        String errorText = getErrorMessage(message, value, delegate.getClass());
+        reader.pushError(reader.getPath(), new JsonPrimitive(errorText));
         // Continue parsing without setting this field
         return null;
+    }
+
+    private String getErrorMessage(String message, String value, Class<? extends TypeAdapter> clazz) {
+        if (clazz.isAnonymousClass() && clazz.getName().startsWith(Gson.class.getPackage().getName())) {
+            // Anonymous classes from Gson are pretty useless for error messages (and provide useless error messages as well)
+            return MessageFormat.format("Unable to parse `{0}` as [{1}]", value, type.getType(), clazz.getName(), message);
+        } else {
+            return MessageFormat.format("Unable to parse `{0}` as [{1}] using {2}: {3}", value, type.getType(), clazz.getName(), message);
+        }
     }
 
     /**
