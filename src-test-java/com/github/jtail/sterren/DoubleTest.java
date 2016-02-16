@@ -24,11 +24,11 @@ public class DoubleTest extends AbstractGsonValTest {
 
     @Test
     public void unquotedString() throws Exception {
-        given("X").parseTo(double.class).failWith("\"Unable to parse `X` as [double]\"");
+        given("X").parseTo(double.class).failWith("[\"Unable to parse `X` as [double]\"]");
     }
 
     @Test
     public void quotedString() throws Exception {
-        given("\"X\"").parseTo(double.class).failWith("\"Unable to parse `X` as [double]\"");
+        given("\"X\"").parseTo(double.class).failWith("[\"Unable to parse `X` as [double]\"]");
     }
 }

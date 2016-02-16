@@ -21,7 +21,7 @@ public class IntegerTest extends AbstractGsonValTest {
 
     @Test
     public void decimal() throws Exception {
-        given("1.12").parseTo(int.class).failWith("\"Unable to parse `1.12` as [int]\"");
+        given("1.12").parseTo(int.class).failWith("[\"Unable to parse `1.12` as [int]\"]");
     }
 
     @Test
@@ -31,6 +31,6 @@ public class IntegerTest extends AbstractGsonValTest {
 
     @Test
     public void quotedString() throws Exception {
-        given("\"X\"").parseTo(int.class).failWith("\"Unable to parse `X` as [int]\"");
+        given("\"X\"").parseTo(int.class).failWith("[\"Unable to parse `X` as [int]\"]");
     }
 }

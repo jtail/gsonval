@@ -1,5 +1,6 @@
 package com.github.jtail.sterren.adapters;
 
+import com.github.jtail.gson.BJson;
 import com.github.jtail.sterren.ObjectValidationException;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -89,20 +90,19 @@ public class ValidatingAdapter<T> extends TypeAdapter<T> {
         try {
             return delegate.read(in);
         } catch (NumberFormatException e) {
-            return processError(in, e.getMessage());
+            processError(in, e.getMessage());
         } catch (JsonSyntaxException e) {
             Throwable t = e.getCause();
-            return processError(in, (t instanceof NumberFormatException) ? t.getMessage() : e.getMessage());
+            processError(in, (t instanceof NumberFormatException) ? t.getMessage() : e.getMessage());
         }
-    }
-
-    private T processError(ErrorTrackingReader reader, String message) throws IOException {
-        String value = reader.nextString();
-
-        String errorText = getErrorMessage(message, value, delegate.getClass());
-        reader.pushError(reader.getPath(), new JsonPrimitive(errorText));
         // Continue parsing without setting this field
         return null;
+    }
+
+    private void processError(ErrorTrackingReader reader, String message) throws IOException {
+        String value = reader.nextString();
+        String errorText = getErrorMessage(message, value, delegate.getClass());
+        reader.pushError(reader.getPath(), BJson.arr(new JsonPrimitive(errorText)));
     }
 
     private String getErrorMessage(String message, String value, Class<? extends TypeAdapter> clazz) {

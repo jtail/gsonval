@@ -38,7 +38,7 @@ public class SmokeTest extends AbstractGsonValTest {
 
     @Test
     public void test2() throws Exception {
-        given("{'value':'X'}").parseTo(Int.class).failWith("{'value':'Unable to parse `X` as [int]'}");
+        given("{'value':'X'}").parseTo(Int.class).failWith("{'value':['Unable to parse `X` as [int]']}");
     }
 
     @Test
@@ -53,7 +53,7 @@ public class SmokeTest extends AbstractGsonValTest {
         ).parseTo(
                 new TypeToken<Int[]>() {}
         ).failWith(
-                "{'2':{'va.lue':'Unable to parse `.X` as [int]'}, '3':{'value':'Unable to parse `Y` as [int]'}}"
+                "{'2':{'va.lue':['Unable to parse `.X` as [int]']}, '3':{'value':['Unable to parse `Y` as [int]']}}"
         );
     }
 
