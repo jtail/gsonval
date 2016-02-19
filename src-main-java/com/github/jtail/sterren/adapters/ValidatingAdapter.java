@@ -18,15 +18,15 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Deque;
 import java.util.Optional;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 public class ValidatingAdapter<T> extends TypeAdapter<T> {
     private final TypeAdapter<T> delegate;
-    private final Consumer<T> validationCallback;
+    private final BiConsumer<T, Optional<JsonElement>> validationCallback;
     private TypeToken<T> type;
 
-    public ValidatingAdapter(TypeAdapter<T> delegate, Consumer<T> validationCallback, TypeToken<T> type) {
+    public ValidatingAdapter(TypeAdapter<T> delegate, BiConsumer<T, Optional<JsonElement>> validationCallback, TypeToken<T> type) {
         this.delegate = delegate;
         this.validationCallback = validationCallback;
         this.type = type;
@@ -40,12 +40,14 @@ public class ValidatingAdapter<T> extends TypeAdapter<T> {
             // This is top-level object
             ErrorTrackingReader reader = new ErrorTrackingReader(in);
             T object = readTracked(reader);
-            Optional.ofNullable(reader.getErrors().peek()).ifPresent((e) -> {
-                throw new ObjectValidationException("Validation failed", e.getValue());
-            });
+            Optional<JsonElement> structural = Optional.ofNullable(reader.getErrors().peek()).map(Pair::getValue);
+
             if (validationCallback != null) {
-                validationCallback.accept(object);
+                validationCallback.accept(object, structural);
             }
+            structural.ifPresent(error -> {
+                throw new ObjectValidationException("Validation failed", error);
+            });
             return object;
         }
     }

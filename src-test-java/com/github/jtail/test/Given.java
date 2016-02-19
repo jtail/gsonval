@@ -2,9 +2,9 @@ package com.github.jtail.test;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import lombok.Getter;
 
-@Getter
+import java.lang.reflect.Type;
+
 public class Given {
     final private Gson subj;
     final private String json;
@@ -21,4 +21,9 @@ public class Given {
     public <T> ParseTo<T> parseTo(TypeToken<T> type) {
         return new ParseTo<>(this, type);
     }
+
+    public <T> T execute(Type type) {
+        return subj.fromJson(json, type);
+    }
+
 }

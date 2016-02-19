@@ -22,13 +22,19 @@ import static org.junit.Assert.assertThat;
 @WebIntegrationTest(randomPort = true)
 public class TutorialTest extends AbstractJerseyTest {
 
+    public JsonParser parser = new JsonParser();
+
     @Test
     public void createPoint() {
-        Response response = post("tutorial/point/create", "{'x':'200', 'y':'two'}");
+        String json = "{'x':'200', 'y':'two'}";
+        Response response = post("tutorial/point/create", json);
         assertThat(HttpStatus.valueOf(response.getStatus()), is(HttpStatus.BAD_REQUEST));
         String entity = response.readEntity(String.class);
-        JsonObject r = new JsonParser().parse(entity).getAsJsonObject();
-        assertThat(r.entrySet().size(), is(2));
+        expect(entity, "{'y':['Unable to parse `two` as [double]'],'x':['must be less than or equal to 100.0']}");
+    }
+
+    private void expect(String entity, String json) {
+        assertThat(parser.parse(entity), is(parser.parse(json)));
     }
 
 

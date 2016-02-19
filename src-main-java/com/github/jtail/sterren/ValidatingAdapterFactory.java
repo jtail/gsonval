@@ -18,6 +18,7 @@ package com.github.jtail.sterren;
 
 import com.github.jtail.sterren.adapters.ValidatingAdapter;
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.TypeAdapter;
 import com.google.gson.TypeAdapterFactory;
@@ -27,14 +28,14 @@ import lombok.AllArgsConstructor;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
+import java.util.Optional;
 import java.util.Set;
-import java.util.function.Consumer;
-import java.util.function.Function;
+import java.util.function.BiConsumer;
 
 @AllArgsConstructor
 public class ValidatingAdapterFactory implements TypeAdapterFactory {
     private final Validator validator;
-    private final Function<Iterable<? extends ConstraintViolation<?>>, JsonObject> converter;
+    private final ViolationConverter converter;
 
     public ValidatingAdapterFactory() {
         this(Validation.buildDefaultValidatorFactory().getValidator());
@@ -47,17 +48,23 @@ public class ValidatingAdapterFactory implements TypeAdapterFactory {
 
     @Override
     public <T> TypeAdapter<T> create(Gson gson, final TypeToken<T> type) {
-        Consumer<T> validate = validator != null ? this::validate : t -> {};
+        BiConsumer<T, Optional<JsonElement>> validate = validator != null ? this::validate : (t, v) -> {};
         return new ValidatingAdapter<>(gson.getDelegateAdapter(this, type), validate, type);
     }
 
-    private <T> T validate(T object) {
-        Set<ConstraintViolation<T>> violations = validator.validate(object);
-        if (violations.isEmpty()) {
+    private <T> T validate(T object, Optional<JsonElement> errors) {
+        JsonElement structuralErrors = errors.orElse(new JsonObject());
+        JsonElement feedback;
+        if (object != null) {
+            Set<ConstraintViolation<T>> violations = validator.validate(object);
+            feedback = converter.merge(violations, structuralErrors);
+        } else {
+            feedback = structuralErrors;
+        }
+        if (feedback.isJsonArray() || feedback.getAsJsonObject().entrySet().isEmpty()) {
             return object;
         } else {
-            JsonObject feedback = converter.apply(violations);
-            throw new ObjectValidationException("Constraints failed: " + violations.size(), feedback);
+            throw new ObjectValidationException("Validation failed", feedback);
         }
     }
 

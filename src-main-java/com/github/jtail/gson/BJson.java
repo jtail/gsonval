@@ -12,6 +12,14 @@ import java.util.stream.Stream;
  */
 public class BJson {
     /**
+     * A shortcut to creates JsonArray from strings.
+     * @param contents elements to be placed inside the array
+     */
+    public static JsonArray arr(String... contents ) {
+        return arr(a -> Stream.of(contents ).forEach(a::add));
+    }
+
+    /**
      * Creates JsonArray from nested elements.
      * @param contents elements to be placed inside the array
      */

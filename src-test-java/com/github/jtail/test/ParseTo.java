@@ -33,20 +33,15 @@ public class ParseTo<T> {
     }
 
     public  <X extends Exception> X failWith(Class<X> clazz) {
-        return FnAssert.assertThrows(this::execute, clazz);
+        return FnAssert.assertThrows(() -> given.execute(type), clazz);
     }
 
     public <V> void returns(Function<T, V> transform, Matcher<V> matcher) {
-        Assert.assertThat(execute(), FnAssert.has(transform, matcher));
+        Assert.assertThat(given.execute(type), FnAssert.has(transform, matcher));
     }
 
     public <V> void returns(Matcher<T> matcher) {
-        Assert.assertThat(execute(), matcher);
+        Assert.assertThat(given.execute(type), matcher);
     }
-
-    private T execute() {
-        return given.getSubj().fromJson(given.getJson(), type);
-    }
-
 
 }
