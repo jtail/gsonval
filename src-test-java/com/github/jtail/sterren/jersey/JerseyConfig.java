@@ -23,11 +23,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class JerseyConfig extends ResourceConfig {
 
-	public JerseyConfig() {
-		property(ServerProperties.BV_FEATURE_DISABLE, true);
-		register(GsonMessageBodyHandler.class);
-		register(Endpoint.class);
-		register(PingResource.class);
-	}
+    public JerseyConfig() {
+        property(ServerProperties.BV_FEATURE_DISABLE, true);
+        register(GsonMessageBodyHandler.class);
+        register(Endpoint.class);
+        register(TutorialEndpoint.class);
+        register(PingResource.class);
+    }
 
 }
