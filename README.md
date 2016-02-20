@@ -38,10 +38,10 @@ Request:
 Response:
 ```json
 {
-    "dateofbirth": ["Mandatory"],
+    "dateofbirth": ["may not be null"],
     "emails": ["Only one can be set as primary", "At least 3 emails are required"],
     "masters" {
-        "1": ["Unknown character name 'Joda'. Maybe you meant: 'Yoda'?"]
+        "1": ["Unknown character name 'Joda'"]
     }
 }
 ```

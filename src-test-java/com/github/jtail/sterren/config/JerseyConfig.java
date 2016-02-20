@@ -14,8 +14,13 @@
  * limitations under the License.
  */
 
-package com.github.jtail.sterren.jersey;
+package com.github.jtail.sterren.config;
 
+import com.github.jtail.sterren.jersey.Endpoint;
+import com.github.jtail.sterren.jersey.GsonMessageBodyHandler;
+import com.github.jtail.sterren.jersey.PingResource;
+import com.github.jtail.sterren.tutorial.endpoints.PointResource;
+import com.github.jtail.sterren.tutorial.endpoints.UserResource;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
 import org.springframework.stereotype.Component;
@@ -27,7 +32,8 @@ public class JerseyConfig extends ResourceConfig {
         property(ServerProperties.BV_FEATURE_DISABLE, true);
         register(GsonMessageBodyHandler.class);
         register(Endpoint.class);
-        register(TutorialEndpoint.class);
+        register(PointResource.class);
+        register(UserResource.class);
         register(PingResource.class);
     }
 

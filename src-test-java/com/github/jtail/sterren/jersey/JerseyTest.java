@@ -1,6 +1,7 @@
 package com.github.jtail.sterren.jersey;
 
 
+import com.github.jtail.sterren.config.JerseyApplication;
 import com.github.jtail.testbeans.Bar;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;

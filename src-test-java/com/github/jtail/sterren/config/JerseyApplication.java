@@ -1,4 +1,4 @@
-package com.github.jtail.sterren.jersey;
+package com.github.jtail.sterren.config;
 
 import org.slf4j.bridge.SLF4JBridgeHandler;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

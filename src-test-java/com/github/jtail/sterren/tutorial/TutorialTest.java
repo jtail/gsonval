@@ -1,7 +1,10 @@
-package com.github.jtail.sterren.jersey;
+package com.github.jtail.sterren.tutorial;
 
 
+import com.github.jtail.sterren.config.JerseyApplication;
+import com.github.jtail.sterren.jersey.GsonMessageBodyHandler;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.filter.LoggingFilter;
 import org.junit.Test;
@@ -50,6 +53,30 @@ public class TutorialTest {
                 has(r -> r.readEntity(String.class), isJson(
                         "{'x':['must be less than or equal to 100.0'], 'y':['Unable to parse `two` as [double]']}"
                 ))
+        );
+    }
+
+    @Test
+    public void createUser() throws Exception {
+        given(
+                webTarget().path("tutorial/user/create")
+        ).execute(
+                post("{" + StringUtils.join(
+                        "'name': 'Luke',",
+                        "'surname': 'Skywalker',",
+                        "'emails': [",
+                        "    {'address' : 'luke_skywalker@jediorder.sw', 'primary' : 'true'},",
+                        "    {'address' : 'luke_skywalker@newrepublic.sw', 'primary' : 'true'}",
+                        "],",
+                        "'masters': ['Obi-Wan Kenobi', 'Joda']"
+                ) + "}")
+        ).expect(
+                has(Response::getStatus, is(HttpServletResponse.SC_BAD_REQUEST)),
+                has(r -> r.readEntity(String.class), isJson("{" + StringUtils.join(
+                        "'dateofbirth':['may not be null'],",
+                        "'emails':['must be exactly one primary email','at least 3 emails are required'],",
+                        "'masters':[{'1':'is not a known Jedi Master'}]"
+                ) + "}"))
         );
     }
 

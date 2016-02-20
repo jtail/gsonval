@@ -7,6 +7,8 @@ import org.hamcrest.Matchers;
 import org.hamcrest.TypeSafeMatcher;
 import org.junit.Assert;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
 
@@ -14,9 +16,11 @@ import java.util.function.Function;
 public class FnAssert {
     public static <T, V> Matcher<T> has(Function<T, V> transform, Matcher<V> matcher) {
         return new TypeSafeMatcher<T>() {
+            Map<T, V> cache = new HashMap<>();
+
             @Override
             protected boolean matchesSafely(T item) {
-                return matcher.matches(transform.apply(item));
+                return matcher.matches(cache.computeIfAbsent(item, transform::apply));
             }
 
             @Override
