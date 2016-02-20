@@ -7,7 +7,7 @@
 Request:
 ```json
 {
-    "x": "two",
+    "x": "200",
     "y": "ten"
 }
 ```
@@ -15,8 +15,8 @@ Request:
 Response:
 ```json
 {
-    "x": ["Unable to parse `two` as [double]"],
-    "y": ["Unable to parse `ten` as [double]"]
+    "x": ["must be less than or equal to 100.0"],
+    "y": ["Unable to parse `two` as [double]"]
 }
 ```
 

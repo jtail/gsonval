@@ -16,11 +16,13 @@
 
 package com.github.jtail.sterren.jersey;
 
-import com.github.jtail.testbeans.Point;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 
 import javax.validation.Valid;
+import javax.validation.constraints.DecimalMax;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -41,4 +43,12 @@ public class TutorialEndpoint {
         return input;
     }
 
+    @Getter
+    @Setter
+    public static class Point {
+        @DecimalMax("100.0")
+        private double x;
+        @DecimalMax("100.0")
+        private double y;
+    }
 }

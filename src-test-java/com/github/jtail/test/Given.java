@@ -1,16 +1,16 @@
 package com.github.jtail.test;
 
-import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
 
-public class Given {
-    final private Gson subj;
-    final private String json;
+/**
+ *
+ */
+public abstract class Given {
+    protected final String json;
 
-    public Given(Gson subj, String json) {
-        this.subj = subj;
+    public Given(String json) {
         this.json = json;
     }
 
@@ -22,8 +22,5 @@ public class Given {
         return new ParseTo<>(this, type);
     }
 
-    public <T> T execute(Type type) {
-        return subj.fromJson(json, type);
-    }
-
+    public abstract <T> T execute(Type type);
 }
