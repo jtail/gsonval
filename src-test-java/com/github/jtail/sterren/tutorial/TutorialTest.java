@@ -4,7 +4,6 @@ package com.github.jtail.sterren.tutorial;
 import com.github.jtail.sterren.config.JerseyApplication;
 import com.github.jtail.sterren.jersey.GsonMessageBodyHandler;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.filter.LoggingFilter;
 import org.junit.Test;
@@ -26,6 +25,7 @@ import static com.github.jtail.test.Admire.given;
 import static com.github.jtail.testutil.FnAssert.has;
 import static com.github.jtail.testutil.JsonMatchers.isJson;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static org.apache.commons.lang3.StringUtils.join;
 import static org.hamcrest.Matchers.is;
 
 /**
@@ -37,6 +37,9 @@ import static org.hamcrest.Matchers.is;
 @WebIntegrationTest(randomPort = true)
 public class TutorialTest {
     private LoggingFilter loggingFilter = new LoggingFilter(Logger.getLogger(getClass().getName()), true);
+    private static final Function<Response, String> ENTITY = response -> response.readEntity(String.class);
+    private static final Function<Response, Integer> STATUS = Response::getStatus;
+
     private ClientConfig config = new ClientConfig().register(GsonMessageBodyHandler.class).register(loggingFilter);
 
     @Value("${local.server.port}")
@@ -49,8 +52,8 @@ public class TutorialTest {
         ).execute(
                 post("{'x':'200', 'y':'two'}")
         ).expect(
-                has(Response::getStatus, is(HttpServletResponse.SC_BAD_REQUEST)),
-                has(r -> r.readEntity(String.class), isJson(
+                has(STATUS, is(HttpServletResponse.SC_BAD_REQUEST)),
+                has(ENTITY, isJson(
                         "{'x':['must be less than or equal to 100.0'], 'y':['Unable to parse `two` as [double]']}"
                 ))
         );
@@ -61,21 +64,21 @@ public class TutorialTest {
         given(
                 webTarget().path("tutorial/user/create")
         ).execute(
-                post("{" + StringUtils.join(
+                post("{" + join(
                         "'name': 'Luke',",
                         "'surname': 'Skywalker',",
                         "'emails': [",
-                        "    {'address' : 'luke_skywalker@jediorder.sw', 'primary' : 'true'},",
-                        "    {'address' : 'luke_skywalker@newrepublic.sw', 'primary' : 'true'}",
+                        "    {'address': 'luke_skywalker@jediorder.sw', 'primary': 'true'},",
+                        "    {'address': 'luke_skywalker@newrepublic.sw', 'primary': 'true'}",
                         "],",
                         "'masters': ['Obi-Wan Kenobi', 'Joda']"
                 ) + "}")
         ).expect(
-                has(Response::getStatus, is(HttpServletResponse.SC_BAD_REQUEST)),
-                has(r -> r.readEntity(String.class), isJson("{" + StringUtils.join(
-                        "'dateofbirth':['may not be null'],",
-                        "'emails':['must be exactly one primary email','at least 3 emails are required'],",
-                        "'masters':[{'1':'is not a known Jedi Master'}]"
+                has(STATUS, is(HttpServletResponse.SC_BAD_REQUEST)),
+                has(ENTITY, isJson("{" + join(
+                        "'dateofbirth': ['may not be null'],",
+                        "'emails': ['at least 3 emails are required', 'must be exactly one primary email'],",
+                        "'masters': {'1':['is not a known Jedi Master']}"
                 ) + "}"))
         );
     }

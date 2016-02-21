@@ -20,13 +20,21 @@ public class FnAssert {
 
             @Override
             protected boolean matchesSafely(T item) {
-                return matcher.matches(cache.computeIfAbsent(item, transform::apply));
+                return matcher.matches(compute(item));
             }
 
             @Override
             public void describeTo(Description description) {
-                description.appendText("Assert on: ").appendValue(transform);
-                description.appendText(" that is ").appendDescriptionOf(matcher);
+                description.appendDescriptionOf(matcher);
+            }
+
+            @Override
+            protected void describeMismatchSafely(T item, Description mismatchDescription) {
+                matcher.describeMismatch(compute(item), mismatchDescription);
+            }
+
+            private V compute(T item) {
+                return cache.computeIfAbsent(item, transform::apply);
             }
         };
     }

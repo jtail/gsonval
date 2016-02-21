@@ -26,7 +26,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Constraint(validatedBy = ValueLength.Validator.class)
 public @interface ValueLength {
 
-    String message() default "{com.github.jtail.sterren.tutorial.validators.JediMaster.message}";
+    String message() default "value length out of range";
 
     Class<?>[] groups() default {};
 

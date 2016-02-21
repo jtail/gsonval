@@ -35,7 +35,7 @@ public class IntegerListTest extends AbstractGsonValTest {
     @Test
     public void constraints() throws Exception {
         given("{'value': ['1', '222', '3']}").parseTo(Dummy.class).failWith(
-                "{'1':['Unable to parse `2.1` as [java.lang.Integer]']}"
+                "{'value': {'1':['value length out of range']}}"
         );
     }
 

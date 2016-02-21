@@ -3,7 +3,6 @@ package com.github.jtail.sterren;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
 import com.google.gson.PackageHack;
 import lombok.extern.slf4j.Slf4j;
 
@@ -35,52 +34,56 @@ public class ViolationConverter implements Function<Iterable<? extends Constrain
             JsonObject object = structuralErrors.getAsJsonObject();
             JsonObject ret = PackageHack.deepCopy(object);
             for (ConstraintViolation<?> violation : violations) {
-                fork(ret, violation.getPropertyPath().iterator(), violation.getMessage(), Optional.of(object));
+                fork(ret, violation.getPropertyPath().iterator(), Optional.of(object)).ifPresent(
+                        a -> a.add(violation.getMessage())
+                );
             }
             return ret;
         }
     }
 
-    private void fork(JsonObject parent, Iterator<Path.Node> it, String message, Optional<JsonObject> structuralParent) {
+    private Optional<JsonArray> fork(JsonObject parent, Iterator<Path.Node> it, Optional<JsonObject> struct) {
         Path.Node node = it.next();
         String name = node.getName();
-        JsonElement child = parent.get(name);
 
-        Optional<JsonElement> structural = structuralParent.map(x -> x.get(name));
+        Optional<JsonElement> struct1 = struct.map(x -> x.get(name));
         String path = node.toString();
         if (!Objects.equals(path, name)) {
             String index = extractIndex(name, path);
-            JsonObject object = new JsonObject();
-            parent.add(index, object);
+            return fork(branch(parent, name), it, index, toObject(struct1).map(x -> x.get(name)));
         } else {
-            fork(parent, it, message, name, child, structural);
+            return fork(parent, it, name, struct1);
         }
     }
 
-    private void fork(JsonObject parent, Iterator<Path.Node> it, String message, String name, JsonElement child, Optional<JsonElement> structural) {
-        if (structural.map(JsonElement::isJsonArray).orElse(false)) {
-            parent.add(name, structural.get());
-            log.debug("Ignoring javax.validation [{}] in favor of structural [{}]", message, structural.get());
+    private Optional<JsonArray> fork(JsonObject parent, Iterator<Path.Node> it, String name, Optional<JsonElement> struct) {
+        if (struct.map(JsonElement::isJsonArray).orElse(false)) {
+            parent.add(name, struct.get());
+            log.debug("Ignoring javax.validation in favor of structural [{}]", struct.get());
+            return Optional.empty();
         } else if (it.hasNext()) {
-            branch(parent, it, message, name, child, toObject(structural));
+            return fork(branch(parent, name), it, toObject(struct));
         } else {
-            leaf(parent, name, child).add(new JsonPrimitive(message));
+            return Optional.of(leaf(parent, name));
         }
     }
 
-    private void branch(JsonObject parent, Iterator<Path.Node> it, String message, String name, JsonElement child, Optional<JsonObject> struct) {
+    private JsonObject branch(JsonObject parent, String name) {
+        JsonElement child = parent.get(name);
         if (child == null) {
-            JsonObject object = new JsonObject();
+            JsonObject object;
+            object = new JsonObject();
             parent.add(name, object);
-            fork(object, it, message, struct);
+            return object;
         } else if (child.isJsonObject()) {
-            fork(child.getAsJsonObject(), it, message, struct);
+            return child.getAsJsonObject();
         } else {
             throw new IllegalStateException(name);
         }
     }
 
-    private JsonArray leaf(JsonObject parent, String name, JsonElement child) {
+    private JsonArray leaf(JsonObject parent, String name) {
+        JsonElement child = parent.get(name);
         if (child == null) {
             JsonArray array = new JsonArray();
             parent.add(name, array);
