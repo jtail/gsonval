@@ -15,13 +15,17 @@ import com.google.gson.stream.JsonWriter;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.text.MessageFormat;
+import java.text.ParseException;
 import java.util.Deque;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 public class ValidatingAdapter<T> extends TypeAdapter<T> {
+    private final DecimalFormat indexFormat = new DecimalFormat("[0]");
+
     private final TypeAdapter<T> delegate;
     private final BiConsumer<T, Optional<JsonElement>> validationCallback;
     private TypeToken<T> type;
@@ -58,9 +62,22 @@ public class ValidatingAdapter<T> extends TypeAdapter<T> {
             case BEGIN_OBJECT:
                 return readNested(in, key -> key.substring(1));
             case BEGIN_ARRAY:
-                return readNested(in, key -> key.substring(1, key.length() - 1));
+                return readNested(in, this::adjustArrayKey);
             default:
                 return delegate(in);
+        }
+    }
+
+    /**
+     * For some reason GSON parser provides 1-based indexes. We remove square brackets here and decrease them by 1
+     * Sample: [3] -> 2
+     * @param key array key to be adjusted
+     */
+    private String adjustArrayKey(String key) {
+        try {
+            return String.valueOf(indexFormat.parse(key).intValue() - 1);
+        } catch (ParseException e) {
+            throw new RuntimeException(e.getMessage(), e);
         }
     }
 
@@ -110,9 +127,9 @@ public class ValidatingAdapter<T> extends TypeAdapter<T> {
     private String getErrorMessage(String message, String value, Class<? extends TypeAdapter> clazz) {
         if (clazz.isAnonymousClass() && clazz.getName().startsWith(Gson.class.getPackage().getName())) {
             // Anonymous classes from Gson are pretty useless for error messages (and provide useless error messages as well)
-            return MessageFormat.format("Unable to parse `{0}` as [{1}]", value, type.getType(), clazz.getName(), message);
+            return MessageFormat.format("Unable to parse `{0}` as [{1}]", value, type.getType().getTypeName());
         } else {
-            return MessageFormat.format("Unable to parse `{0}` as [{1}] using {2}: {3}", value, type.getType(), clazz.getName(), message);
+            return MessageFormat.format("Unable to parse `{0}` as [{1}] using {2}: {3}", value, type.getType().getTypeName(), clazz.getName(), message);
         }
     }
 

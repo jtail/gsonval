@@ -40,7 +40,7 @@ public class ParseTo<T> {
         Assert.assertThat(given.execute(type), FnAssert.has(transform, matcher));
     }
 
-    public <V> void returns(Matcher<T> matcher) {
+    public <V> void returns(Matcher<? super T> matcher) {
         Assert.assertThat(given.execute(type), matcher);
     }
 

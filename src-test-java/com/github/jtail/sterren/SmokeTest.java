@@ -53,7 +53,7 @@ public class SmokeTest extends AbstractGsonValTest {
         ).parseTo(
                 new TypeToken<Int[]>() {}
         ).failWith(
-                "{'2':{'va.lue':['Unable to parse `.X` as [int]']}, '3':{'value':['Unable to parse `Y` as [int]']}}"
+                "{'1':{'va.lue':['Unable to parse `.X` as [int]']}, '2':{'value':['Unable to parse `Y` as [int]']}}"
         );
     }
 
