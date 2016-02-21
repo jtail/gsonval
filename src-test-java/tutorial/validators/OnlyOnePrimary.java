@@ -1,6 +1,6 @@
-package com.github.jtail.sterren.tutorial.validators;
+package tutorial.validators;
 
-import com.github.jtail.sterren.tutorial.endpoints.UserResource.Email;
+import tutorial.endpoints.UserResource.Email;
 
 import javax.validation.Constraint;
 import javax.validation.ConstraintValidator;
@@ -28,7 +28,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Constraint(validatedBy = OnlyOnePrimary.Validator.class)
 public @interface OnlyOnePrimary {
 
-    String message() default "{com.github.jtail.sterren.tutorial.validators.OnlyOnePrimary.message}";
+    String message() default "{tutorial.validators.OnlyOnePrimary.message}";
 
     Class<?>[] groups() default {};
 

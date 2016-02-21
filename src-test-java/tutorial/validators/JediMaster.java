@@ -1,4 +1,4 @@
-package com.github.jtail.sterren.tutorial.validators;
+package tutorial.validators;
 
 import javax.validation.Constraint;
 import javax.validation.ConstraintValidator;
@@ -26,7 +26,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Constraint(validatedBy = JediMaster.Validator.class)
 public @interface JediMaster {
 
-    String message() default "{com.github.jtail.sterren.tutorial.validators.JediMaster.message}";
+    String message() default "{tutorial.validators.JediMaster.message}";
 
     Class<?>[] groups() default {};
 

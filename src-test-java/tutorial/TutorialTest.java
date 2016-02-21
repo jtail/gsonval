@@ -1,4 +1,4 @@
-package com.github.jtail.sterren.tutorial;
+package tutorial;
 
 
 import com.github.jtail.sterren.config.JerseyApplication;

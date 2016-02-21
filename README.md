@@ -39,13 +39,14 @@ Response:
 ```json
 {
     "dateofbirth": ["may not be null"],
-    "emails": ["Only one can be set as primary", "At least 3 emails are required"],
+    "emails": ["at least 3 emails are required", "must be exactly one primary email"],
     "masters" {
-        "1": ["Unknown character name 'Joda'"]
+        "1": ["is not a known Jedi Master"]
     }
 }
 ```
 
+See /src-test-java/tutorial/TutorialTest.java to see how it works
 
 ## Overview and motto
 
