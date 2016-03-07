@@ -63,7 +63,7 @@ public class GsonMessageBodyHandler implements MessageBodyWriter<Object>, Messag
         }
     }
 
-    private Response buildErrorResponse(JsonElement feedback) {
+    protected Response buildErrorResponse(JsonElement feedback) {
         return Response.status(Response.Status.BAD_REQUEST).type(MediaType.APPLICATION_JSON_TYPE).entity(feedback).build();
     }
 
